@@ -24,6 +24,7 @@ A Pomodoro timer that lives right in your menu bar. Start immediately without co
 - macOS 14.6+
 - Xcode 15.0+
 - Swift 5.9+
+- SwiftPM builds require Swift tools 6.2+
 
 ### Installation
 
@@ -113,6 +114,18 @@ xcodebuild -scheme rytmo -configuration Release build
 # Test
 xcodebuild test -scheme rytmo
 ```
+
+### SwiftPM
+
+```bash
+swift package resolve
+swift build
+swift run rytmo
+```
+
+SwiftPM builds the `rytmo` executable target directly from `Package.swift`.
+Use the Xcode/release scripts when you need a signed `.app` bundle,
+entitlements, or Sparkle DMG release artifacts.
 
 ### Automated Release (Sparkle + DMG)
 
