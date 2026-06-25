@@ -16,30 +16,12 @@ enum DashboardSelection: Hashable {
 struct DashboardView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var musicPlayer: MusicPlayerManager
-    @EnvironmentObject var timerManager: PomodoroTimerManager
     @Environment(\.openSettings) private var openSettings
     @Query(sort: \Playlist.orderIndex) private var playlists: [Playlist]
 
     @State private var selection: DashboardSelection? = .home
     @State private var isPlaylistExpanded: Bool = true
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
-
-    private var sectionTitle: String {
-        switch selection {
-        case .home, .none:
-            return "Home"
-        case .calendar, .calendarSettings:
-            return "Calendar"
-        case .tasks:
-            return "Tasks"
-        case .allPlaylists:
-            return "Playlists"
-        case .playlist(let playlist):
-            return playlist.name
-        case .settings:
-            return "Settings"
-        }
-    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -266,18 +248,7 @@ struct DashboardView: View {
                     
                     MusicPlayerBar()
                 }
-                .toolbar {
-                    if selection != .home {
-                        ToolbarItem(placement: .principal) {
-                            Text(sectionTitle)
-                                .font(.headline)
-                        }
-
-                        ToolbarItemGroup(placement: .primaryAction) {
-                            toolbarPrimaryAction
-                        }
-                    }
-                }
+                .toolbar(removing: .sidebarToggle)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("switchToCalendarSettings"))) { _ in
@@ -306,34 +277,6 @@ struct DashboardView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .createNewTask)) { _ in
             selection = .tasks
-        }
-    }
-
-    @ViewBuilder
-    private var toolbarPrimaryAction: some View {
-        switch selection {
-        case .calendar, .calendarSettings:
-            Button("Add Event") {
-                NotificationCenter.default.post(name: .createNewEvent, object: nil)
-            }
-            .help("Create a new calendar event")
-        case .tasks:
-            Button("New Task") {
-                NotificationCenter.default.post(name: .focusNewTask, object: nil)
-            }
-            .help("Create a new task")
-        case .allPlaylists, .playlist:
-            Button("Playlists") {
-                selection = .allPlaylists
-            }
-            .help("Browse playlists")
-        case .home:
-            EmptyView()
-        case .settings, .none:
-            Button("Settings") {
-                openSettings()
-            }
-            .help("Open app settings")
         }
     }
 
