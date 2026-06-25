@@ -399,8 +399,32 @@ class CalendarManager: ObservableObject {
         aggregateEventsImmediate()
     }
     
+    // MARK: - Write Permission
+
+    /// Whether events can be created or edited for the given calendar source.
+    func canWriteEvents(for calendarInfo: CalendarInfo) -> Bool {
+        switch calendarInfo.type {
+        case .system:
+            return isAuthorized
+        case .google:
+            return googleManager.canWriteEvents
+        }
+    }
+
+    /// Whether any connected calendar source allows event editing.
+    var canWriteAnyCalendar: Bool {
+        let hasWritableSystem = showSystem && isAuthorized
+        let hasWritableGoogle = showGoogle && googleManager.canWriteEvents
+        return hasWritableSystem || hasWritableGoogle
+    }
+
+    /// Whether Google Calendar is connected in read-only mode and needs a scope upgrade to edit.
+    var googleNeedsScopeUpgrade: Bool {
+        showGoogle && googleManager.needsScopeUpgrade
+    }
+
     // MARK: - Create Event
-    
+
     /// Creates a new event in the specified calendar (System or Google)
     /// - Parameters:
     ///   - title: Event title
@@ -419,6 +443,10 @@ class CalendarManager: ObservableObject {
         location: String?,
         notes: String?
     ) async throws {
+        guard canWriteEvents(for: calendarInfo) else {
+            throw CalendarCreationError.notAuthorized
+        }
+
         switch calendarInfo.type {
         case .system:
             suppressUpcomingSystemStoreRefresh()
@@ -501,6 +529,10 @@ class CalendarManager: ObservableObject {
         location: String?,
         notes: String?
     ) async throws {
+        guard canWriteEvents(for: calendarInfo) else {
+            throw CalendarCreationError.notAuthorized
+        }
+
         switch event.sourceName {
         case "System":
             suppressUpcomingSystemStoreRefresh()
@@ -578,6 +610,16 @@ class CalendarManager: ObservableObject {
     
     /// Deletes an event
     func deleteEvent(event: CalendarEventProtocol) async throws {
+        if event.sourceName == "Google" {
+            guard googleManager.canWriteEvents else {
+                throw CalendarCreationError.notAuthorized
+            }
+        } else if event.sourceName == "System" {
+            guard isAuthorized else {
+                throw CalendarCreationError.notAuthorized
+            }
+        }
+
         switch event.sourceName {
         case "System":
             suppressUpcomingSystemStoreRefresh()
@@ -624,7 +666,7 @@ enum CalendarCreationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notAuthorized:
-            return "Calendar access not authorized. Please grant permission in System Settings."
+            return "Calendar write access is not granted. Connect a calendar or upgrade permissions in Settings."
         case .calendarNotFound:
             return "Selected calendar not found."
         case .saveFailed(let message):

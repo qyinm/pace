@@ -14,7 +14,17 @@ struct DashboardCalendarView: View {
     @State private var updateTask: Task<Void, Never>?
     
     private let calendar = Calendar.current
-    
+
+    private var eventsForSelectedDate: [CalendarEventProtocol] {
+        let dayStart = calendar.startOfDay(for: selectedDate)
+        return calendarManager.eventsByDate[dayStart] ?? []
+    }
+
+    private var todosForSelectedDate: [TodoItem] {
+        let dayStart = calendar.startOfDay(for: selectedDate)
+        return cachedTodosByDate[dayStart] ?? []
+    }
+
     var body: some View {
         HStack(spacing: 0) {
             CalendarLeftSidebarOptimized(
@@ -62,6 +72,8 @@ struct DashboardCalendarView: View {
             
             CalendarRightSidebar(
                 selectedDate: selectedDate,
+                dayEvents: eventsForSelectedDate,
+                dayTodos: todosForSelectedDate,
                 selectedEvent: $selectedEvent
             )
         }
@@ -153,15 +165,20 @@ struct CalendarHeaderView: View {
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(.borderless)
-                
+                .accessibilityLabel("Previous month")
+                .help("Previous month")
+
                 Button("Today", action: onToday)
                     .font(.system(size: 11, weight: .medium))
-                
+                    .help("Jump to today")
+
                 Button(action: onNextMonth) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(.borderless)
+                .accessibilityLabel("Next month")
+                .help("Next month")
             }
             .buttonStyle(.bordered)
             .controlSize(.small)

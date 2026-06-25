@@ -47,9 +47,13 @@ class GoogleCalendarManager: ObservableObject {
     
     @Published var events: [GoogleCalendarEvent] = []
     @Published var availableCalendars: [CalendarInfo] = []
+    /// True when the user can read Google Calendar events (full or read-only scope).
     @Published var isAuthorized: Bool = false
+    /// True when the user can create, update, or delete Google Calendar events.
+    @Published var canWriteEvents: Bool = false
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
+    /// True when the user granted read-only access and still needs the full calendar scope to edit.
     @Published var needsScopeUpgrade: Bool = false
     @AppStorage("calendar_event_range_hours") private var eventRangeHours: Int = 24
     
@@ -191,15 +195,17 @@ class GoogleCalendarManager: ObservableObject {
         if let user = GIDSignIn.sharedInstance.currentUser {
             let grantedScopes = user.grantedScopes ?? []
             let hasFullAccess = grantedScopes.contains(GoogleCalendarAPI.scope)
-            let hasLegacyReadonly = grantedScopes.contains(Self.legacyReadonlyScope)
-            
-            self.isAuthorized = hasFullAccess
-            self.needsScopeUpgrade = !hasFullAccess && hasLegacyReadonly
-            
+            let hasReadonlyAccess = grantedScopes.contains(Self.legacyReadonlyScope)
+            let hasReadAccess = hasFullAccess || hasReadonlyAccess
+
+            self.isAuthorized = hasReadAccess
+            self.canWriteEvents = hasFullAccess
+            self.needsScopeUpgrade = hasReadAccess && !hasFullAccess
+
             if self.needsScopeUpgrade {
-                self.error = "Calendar permissions need to be updated. Please reconnect to enable event creation."
+                self.error = nil
             }
-            
+
             if self.isAuthorized {
                 Task {
                     async let calendarsTask: () = fetchCalendarListAsync()
@@ -210,6 +216,7 @@ class GoogleCalendarManager: ObservableObject {
             }
         } else {
             self.isAuthorized = false
+            self.canWriteEvents = false
             self.needsScopeUpgrade = false
         }
     }
@@ -227,10 +234,15 @@ class GoogleCalendarManager: ObservableObject {
         do {
             let result = try await user.addScopes([GoogleCalendarAPI.scope], presenting: window)
             
-            let hasFullAccess = result.user.grantedScopes?.contains(GoogleCalendarAPI.scope) ?? false
-            self.isAuthorized = hasFullAccess
-            self.needsScopeUpgrade = !hasFullAccess
-            
+            let grantedScopes = result.user.grantedScopes ?? []
+            let hasFullAccess = grantedScopes.contains(GoogleCalendarAPI.scope)
+            let hasReadonlyAccess = grantedScopes.contains(Self.legacyReadonlyScope)
+            let hasReadAccess = hasFullAccess || hasReadonlyAccess
+
+            self.isAuthorized = hasReadAccess
+            self.canWriteEvents = hasFullAccess
+            self.needsScopeUpgrade = hasReadAccess && !hasFullAccess
+
             if hasFullAccess {
                 print("✅ Google Calendar scope upgraded successfully")
                 fetchEvents(date: Date())
@@ -301,10 +313,17 @@ class GoogleCalendarManager: ObservableObject {
                 additionalScopes: [GoogleCalendarAPI.scope]
             )
             
-            self.isAuthorized = result.user.grantedScopes?.contains(GoogleCalendarAPI.scope) ?? false
-            
+            let grantedScopes = result.user.grantedScopes ?? []
+            let hasFullAccess = grantedScopes.contains(GoogleCalendarAPI.scope)
+            let hasReadonlyAccess = grantedScopes.contains(Self.legacyReadonlyScope)
+            let hasReadAccess = hasFullAccess || hasReadonlyAccess
+
+            self.isAuthorized = hasReadAccess
+            self.canWriteEvents = hasFullAccess
+            self.needsScopeUpgrade = hasReadAccess && !hasFullAccess
+
             if self.isAuthorized {
-                print("✅ Google Calendar access granted")
+                print("✅ Google Calendar access granted (\(hasFullAccess ? "read/write" : "read-only"))")
                 fetchEvents(date: Date())
                 fetchCalendarList()
             } else {
@@ -329,6 +348,7 @@ class GoogleCalendarManager: ObservableObject {
     /// Disconnect Google Calendar integration (without signing out of Google account)
     func disconnect() {
         self.isAuthorized = false
+        self.canWriteEvents = false
         self.needsScopeUpgrade = false
         self.events = []
         self.error = nil
@@ -610,15 +630,15 @@ class GoogleCalendarManager: ObservableObject {
         location: String?,
         notes: String?
     ) async throws {
-        guard isAuthorized else {
+        guard canWriteEvents else {
             throw GoogleCalendarError.notAuthorized
         }
-        
+
         guard await refreshTokenIfNeeded(),
               let user = GIDSignIn.sharedInstance.currentUser else {
             throw GoogleCalendarError.tokenRefreshFailed
         }
-        
+
         let accessToken = user.accessToken.tokenString
         let urlString = GoogleCalendarAPI.eventsURL(calendarId: calendarId)
         
@@ -689,23 +709,23 @@ class GoogleCalendarManager: ObservableObject {
         location: String?,
         notes: String?
     ) async throws {
-        guard isAuthorized else {
+        guard canWriteEvents else {
             throw GoogleCalendarError.notAuthorized
         }
-        
+
         guard await refreshTokenIfNeeded(),
               let user = GIDSignIn.sharedInstance.currentUser else {
             throw GoogleCalendarError.tokenRefreshFailed
         }
-        
+
         let accessToken = user.accessToken.tokenString
         let encodedEventId = eventId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? eventId
         let urlString = "\(GoogleCalendarAPI.eventsURL(calendarId: calendarId))/\(encodedEventId)"
-        
+
         guard let url = URL(string: urlString) else {
             throw GoogleCalendarError.invalidURL
         }
-        
+
         var eventBody: [String: Any] = ["summary": title]
 
         if isAllDay {
@@ -759,23 +779,23 @@ class GoogleCalendarManager: ObservableObject {
     
     /// Deletes an event from Google Calendar
     func deleteEvent(eventId: String, calendarId: String) async throws {
-        guard isAuthorized else {
+        guard canWriteEvents else {
             throw GoogleCalendarError.notAuthorized
         }
-        
+
         guard await refreshTokenIfNeeded(),
               let user = GIDSignIn.sharedInstance.currentUser else {
             throw GoogleCalendarError.tokenRefreshFailed
         }
-        
+
         let accessToken = user.accessToken.tokenString
         let encodedEventId = eventId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? eventId
         let urlString = "\(GoogleCalendarAPI.eventsURL(calendarId: calendarId))/\(encodedEventId)"
-        
+
         guard let url = URL(string: urlString) else {
             throw GoogleCalendarError.invalidURL
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -812,7 +832,7 @@ enum GoogleCalendarError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notAuthorized:
-            return "Google Calendar is not authorized. Please sign in."
+            return "Google Calendar write access is not granted. Enable calendar editing in Settings."
         case .tokenRefreshFailed:
             return "Failed to refresh authentication token."
         case .invalidURL:
