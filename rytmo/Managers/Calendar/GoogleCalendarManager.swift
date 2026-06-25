@@ -60,6 +60,7 @@ class GoogleCalendarManager: ObservableObject {
     private static let legacyReadonlyScope = "https://www.googleapis.com/auth/calendar.readonly"
     
     private var fetchTask: Task<Void, Never>?
+    private var fetchGeneration = 0
     private var syncTimer: Timer?
     private var lastFetchCenterDate: Date = Date()
     private let eventsCacheFileName = "google_events_cache_v3.json"
@@ -112,9 +113,13 @@ class GoogleCalendarManager: ObservableObject {
     
     private func syncInBackground() {
         guard isAuthorized, fetchTask == nil else { return }
+        fetchGeneration += 1
+        let generation = fetchGeneration
         fetchTask = Task {
-            await fetchAllEventsAsync(centerDate: lastFetchCenterDate)
-            fetchTask = nil
+            await fetchAllEventsAsync(centerDate: lastFetchCenterDate, generation: generation)
+            if !Task.isCancelled && fetchGeneration == generation {
+                fetchTask = nil
+            }
         }
     }
     
@@ -209,15 +214,13 @@ class GoogleCalendarManager: ObservableObject {
             if self.isAuthorized {
                 Task {
                     async let calendarsTask: () = fetchCalendarListAsync()
-                    async let eventsTask: () = fetchAllEventsAsync(centerDate: Date())
-                    _ = await (calendarsTask, eventsTask)
+                    await calendarsTask
+                    fetchEvents(date: Date())
                     startPeriodicSync()
                 }
             }
         } else {
-            self.isAuthorized = false
-            self.canWriteEvents = false
-            self.needsScopeUpgrade = false
+            disconnect()
         }
     }
     
@@ -277,8 +280,7 @@ class GoogleCalendarManager: ObservableObject {
             return true
         } catch {
             print("❌ Token refresh failed: \(error.localizedDescription)")
-            self.error = "Failed to refresh token: \(error.localizedDescription)"
-            self.isAuthorized = false
+            markUnauthorized("Failed to refresh token: \(error.localizedDescription)")
             return false
         }
     }
@@ -347,12 +349,46 @@ class GoogleCalendarManager: ObservableObject {
     
     /// Disconnect Google Calendar integration (without signing out of Google account)
     func disconnect() {
-        self.isAuthorized = false
-        self.canWriteEvents = false
-        self.needsScopeUpgrade = false
-        self.events = []
-        self.error = nil
+        fetchGeneration += 1
+        fetchTask?.cancel()
+        fetchTask = nil
+        syncTimer?.invalidate()
+        syncTimer = nil
+        isLoading = false
+        isAuthorized = false
+        canWriteEvents = false
+        needsScopeUpgrade = false
+        events = []
+        availableCalendars = []
+        error = nil
+        clearCache()
         print("ℹ️ Google Calendar disconnected")
+    }
+
+    private func markUnauthorized(_ message: String = "Session expired. Please reconnect Google Calendar.") {
+        fetchGeneration += 1
+        fetchTask?.cancel()
+        fetchTask = nil
+        syncTimer?.invalidate()
+        syncTimer = nil
+        isLoading = false
+        isAuthorized = false
+        canWriteEvents = false
+        needsScopeUpgrade = false
+        error = message
+    }
+
+    private func clearCache() {
+        for fileName in [eventsCacheFileName, calendarsCacheFileName] {
+            guard let url = getCacheURL(fileName: fileName),
+                  FileManager.default.fileExists(atPath: url.path) else { continue }
+
+            do {
+                try FileManager.default.removeItem(at: url)
+            } catch {
+                print("❌ Failed to clear Google Calendar cache \(fileName): \(error)")
+            }
+        }
     }
     
     // MARK: - Fetch Calendars List
@@ -390,6 +426,8 @@ class GoogleCalendarManager: ObservableObject {
                     type: .google
                 )
             }
+
+            guard isAuthorized else { return }
             
             self.availableCalendars = calendarInfos
             saveCalendarsToCache(calendarInfos)
@@ -410,29 +448,38 @@ class GoogleCalendarManager: ObservableObject {
         
         // Cancel existing task to avoid race conditions and prioritize the new date
         fetchTask?.cancel()
+        fetchGeneration += 1
+        let generation = fetchGeneration
         lastFetchCenterDate = date
         
         fetchTask = Task {
-            await fetchAllEventsAsync(centerDate: date)
-            fetchTask = nil
+            await fetchAllEventsAsync(centerDate: date, generation: generation)
+            if !Task.isCancelled && fetchGeneration == generation {
+                fetchTask = nil
+            }
         }
     }
     
     /// Fetch 6 months of events (3 months before and after centerDate)
-    private func fetchAllEventsAsync(centerDate: Date) async {
-        guard isAuthorized else { return }
+    private func fetchAllEventsAsync(centerDate: Date, generation: Int) async {
+        guard isAuthorized, fetchGeneration == generation, !Task.isCancelled else { return }
         
         self.isLoading = true
         self.error = nil
         
         guard await refreshTokenIfNeeded() else {
-            self.isLoading = false
+            if fetchGeneration == generation {
+                self.isLoading = false
+            }
             return
         }
+
+        guard isAuthorized, fetchGeneration == generation, !Task.isCancelled else { return }
         
         guard let user = GIDSignIn.sharedInstance.currentUser else {
-            self.isLoading = false
-            self.error = "User not found"
+            if fetchGeneration == generation {
+                markUnauthorized("Google user not found. Please reconnect Google Calendar.")
+            }
             return
         }
         
@@ -442,7 +489,9 @@ class GoogleCalendarManager: ObservableObject {
         // Calculate 6-month range based on centerDate
         guard let startDate = calendar.date(byAdding: .month, value: -fetchMonthsBeforeAfter, to: centerDate),
               let endDate = calendar.date(byAdding: .month, value: fetchMonthsBeforeAfter, to: centerDate) else {
-            self.isLoading = false
+            if fetchGeneration == generation {
+                self.isLoading = false
+            }
             return
         }
         
@@ -466,10 +515,16 @@ class GoogleCalendarManager: ObservableObject {
             
             var results: [GoogleCalendarEvent] = []
             for await events in group {
+                if Task.isCancelled {
+                    group.cancelAll()
+                    break
+                }
                 results.append(contentsOf: events)
             }
             return results
         }
+
+        guard isAuthorized, fetchGeneration == generation, !Task.isCancelled else { return }
         
         let normalizedEvents = normalizeEvents(allEvents)
         if !matchesCurrentEvents(normalizedEvents) {
@@ -526,6 +581,7 @@ class GoogleCalendarManager: ObservableObject {
         
         // Paginate through all results (Google API max 2500 per request)
         repeat {
+            guard !Task.isCancelled else { return allEvents }
             guard var components = URLComponents(string: urlString) else { return allEvents }
             components.queryItems = [
                 URLQueryItem(name: "timeMin", value: timeMin),
@@ -548,10 +604,7 @@ class GoogleCalendarManager: ObservableObject {
                 
                 if let httpResponse = response as? HTTPURLResponse {
                     if httpResponse.statusCode == 401 {
-                        await MainActor.run {
-                            self.isAuthorized = false
-                            self.error = "Session expired. Please reconnect Google Calendar."
-                        }
+                        markUnauthorized()
                         return allEvents
                     } else if httpResponse.statusCode != 200 {
                         return allEvents
@@ -687,7 +740,7 @@ class GoogleCalendarManager: ObservableObject {
             let createdEvent = try JSONDecoder().decode(GoogleCalendarEvent.self, from: data)
             upsertCachedEvent(decorateEvent(createdEvent, calendarId: calendarId))
         case 401:
-            self.isAuthorized = false
+            markUnauthorized()
             throw GoogleCalendarError.unauthorized
         default:
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
@@ -782,7 +835,7 @@ class GoogleCalendarManager: ObservableObject {
                 replacing: eventId
             )
         case 401:
-            self.isAuthorized = false
+            markUnauthorized()
             throw GoogleCalendarError.unauthorized
         default:
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
@@ -830,7 +883,7 @@ class GoogleCalendarManager: ObservableObject {
             )
             return movedEvent.eventIdentifier
         case 401:
-            self.isAuthorized = false
+            markUnauthorized()
             throw GoogleCalendarError.unauthorized
         default:
             let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
@@ -874,7 +927,7 @@ class GoogleCalendarManager: ObservableObject {
             print("✅ Google Calendar event deleted successfully")
             removeCachedEvent(eventId: eventId)
         case 401:
-            self.isAuthorized = false
+            markUnauthorized()
             throw GoogleCalendarError.unauthorized
         default:
             throw GoogleCalendarError.apiError(statusCode: httpResponse.statusCode, message: "Delete failed")

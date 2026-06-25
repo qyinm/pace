@@ -63,6 +63,8 @@ class AuthManager: ObservableObject {
                     } catch {
                         print("ℹ️ Google restore sign-in failed or not needed: \(error.localizedDescription)")
                     }
+                } else if user == nil {
+                    GoogleCalendarManager.shared.disconnect()
                 }
             }
         }
@@ -170,6 +172,8 @@ class AuthManager: ObservableObject {
     /// Logout
     func signOut() {
         do {
+            GoogleCalendarManager.shared.disconnect()
+            GIDSignIn.sharedInstance.signOut()
             try Auth.auth().signOut()
             currentUser = nil
             errorMessage = nil
