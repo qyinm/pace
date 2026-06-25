@@ -32,7 +32,9 @@ struct rytmoApp: App {
     // MARK: - Initialization
 
     init() {
-        UserDefaults.standard.register(defaults: ["NSApplicationCrashOnExceptions": true])
+        if ProcessInfo.processInfo.environment["RYTMO_CRASH_ON_APPKIT_EXCEPTIONS"] == "1" {
+            UserDefaults.standard.register(defaults: ["NSApplicationCrashOnExceptions": true])
+        }
 
         FirebaseApp.configure()
         print("✅ Firebase initialization complete (App init)")
