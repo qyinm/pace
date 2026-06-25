@@ -617,7 +617,7 @@ class MusicPlayerManager: ObservableObject {
                 // Call play() if already playing or paused
                 // (YouTube Playlist starts from the beginning if loaded again)
                 if currentTrack == nil, let playlist = selectedPlaylist {
-                    if let playlistId = playlist.youtubePlaylistId, playlist.tracks.isEmpty {
+                    if playlist.youtubePlaylistId != nil, playlist.tracks.isEmpty {
                         // If player is ready, call play() only
                         try? await youTubePlayer.play()
                         

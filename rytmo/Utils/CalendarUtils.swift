@@ -119,7 +119,6 @@ enum CalendarUtils {
             
             // Find overlapping day indices using binary search approach
             let startDay = calendar.startOfDay(for: start)
-            let endDay = calendar.startOfDay(for: effectiveEnd)
             
             var startIdx = dayToIndex[startDay] ?? 0
             var endIdx = allDays.count - 1
@@ -182,7 +181,7 @@ enum CalendarUtils {
     static func arrangeEventsInSlots(for days: [Date], events: [CalendarEventProtocol]) -> [Date: [CalendarEventProtocol?]] {
         guard !days.isEmpty else { return [:] }
         let weekStart = days[0]
-        let weekEnd = days[lastIndex(of: days)] ?? days[6]
+        let weekEnd = days.last!
         let nextWeekStart = calendar.date(byAdding: .day, value: 1, to: weekEnd)!
         
         let weekEvents = events.filter { event in
@@ -243,7 +242,4 @@ enum CalendarUtils {
         return slots
     }
     
-    private static func lastIndex(of array: [Date]) -> Int {
-        return array.count - 1
-    }
 }

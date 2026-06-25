@@ -26,9 +26,9 @@ class AmplitudeManager {
     func setup(apiKey: String) {
         // Log level setting (debug during development, warn in production)
         #if DEBUG
-        let logLevel = LogLevelEnum.DEBUG.rawValue
+        let logLevel = 4
         #else
-        let logLevel = LogLevelEnum.WARN.rawValue
+        let logLevel = 2
         #endif
 
         // Analytics configuration settings

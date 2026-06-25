@@ -145,7 +145,7 @@ struct NotchCalendarGridView: View {
             
             Spacer(minLength: 0)
         }
-        .onChange(of: displayedMonth) { newDate in
+        .onChange(of: displayedMonth) { _, newDate in
             calendarManager.loadEvents(for: newDate)
         }
         .onAppear {
@@ -243,4 +243,3 @@ struct NotchEventsAndTodosView: View {
         }
     }
 }
-
