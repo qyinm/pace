@@ -2,8 +2,8 @@
 
 macOS Menu Bar Timer for Rhythmic Immersion
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2014.6+-lightgrey.svg)]()
-[![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)]()
+[![Platform](https://img.shields.io/badge/platform-macOS%2015.6+-lightgrey.svg)]()
+[![Swift](https://img.shields.io/badge/Swift-6-orange.svg)]()
 
 ## Introduction
 
@@ -21,10 +21,9 @@ A Pomodoro timer that lives right in your menu bar. Start immediately without co
 
 ### Requirements
 
-- macOS 14.6+
-- Xcode 15.0+
-- Swift 5.9+
-- SwiftPM builds require Swift tools 6.2+
+- macOS 15.6+
+- Xcode with Swift 6.2+ toolchain
+- Swift 6 language mode
 
 ### Installation
 
@@ -71,7 +70,7 @@ open rytmo.xcodeproj
 
 ### Tech Stack
 
-- Swift 5.9+
+- Swift 6
 - SwiftUI (MenuBarExtra API)
 - SwiftData
 - Firebase Auth
@@ -124,6 +123,7 @@ swift run rytmo
 ```
 
 SwiftPM builds the `rytmo` executable target directly from `Package.swift`.
+The package uses Swift tools 6.2 and Swift 6 language mode.
 Use the Xcode/release scripts when you need a signed `.app` bundle,
 entitlements, or Sparkle DMG release artifacts.
 
