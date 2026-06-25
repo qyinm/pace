@@ -93,6 +93,7 @@ struct rytmoApp: App {
                 appDelegate: appDelegate
             )
         }
+        .windowStyle(.hiddenTitleBar)
         // Window Size Settings
         .defaultSize(width: UIConstants.MainWindow.idealWidth,
                      height: UIConstants.MainWindow.idealHeight)

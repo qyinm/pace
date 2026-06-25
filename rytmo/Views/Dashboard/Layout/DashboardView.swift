@@ -24,11 +24,6 @@ struct DashboardView: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            if columnVisibility == .detailOnly {
-                SideRailView(selection: $selection)
-                    .transition(.move(edge: .leading).combined(with: .opacity))
-            }
-            
             NavigationSplitView(columnVisibility: $columnVisibility) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
