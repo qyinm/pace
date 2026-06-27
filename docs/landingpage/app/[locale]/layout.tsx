@@ -7,11 +7,7 @@ import {getMessages} from 'next-intl/server';
 import "../globals.css"
 import { SITE_NAME, SITE_URL, TAGLINE, TWITTER_HANDLE } from "@/lib/site"
 
-import { Playfair_Display, Crimson_Text, Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
-
-V0_Font_Geist({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
-V0_Font_Geist_Mono({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
-V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200","300","400","500","600","700","800","900"] })
+import { Playfair_Display, Crimson_Text } from 'next/font/google'
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
