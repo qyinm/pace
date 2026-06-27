@@ -5,14 +5,15 @@ import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { RytmoIcon } from "@/components/rytmo-icon"
+import { PaceIcon } from "@/components/pace-icon"
 import { Header } from "@/components/header"
 import { ChromeOrb } from "@/components/chrome-orb"
+import { DOWNLOAD_URL, SCREENSHOT_URL, SITE_NAME, SITE_URL } from "@/lib/site"
 import { FaApple } from "react-icons/fa";
 import { Timer, Music, Zap, CheckCircle, Calendar, Smartphone, Layout, BarChart, Lock, ArrowRight } from "lucide-react"
 import { motion, useScroll, useTransform, Variants } from 'framer-motion'
 
-export default function RytmoLanding() {
+export default function PaceLanding() {
   const tHero = useTranslations('Hero');
   const tLiveFeatures = useTranslations('LiveFeatures');
   const tRoadmap = useTranslations('Roadmap');
@@ -21,15 +22,13 @@ export default function RytmoLanding() {
   const tCTA = useTranslations('CTA');
   const tFooter = useTranslations('Footer');
 
-  const downloadUrl = "https://qyinm.github.io/rytmo/sparkle/Rytmo.dmg";
-  
   // Structured Data (JSON-LD) for SEO
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "SoftwareApplication",
-        "name": "Rytmo",
+        "name": SITE_NAME,
         "applicationCategory": "ProductivityApplication",
         "operatingSystem": "macOS 14.6 or later",
         "offers": {
@@ -46,7 +45,7 @@ export default function RytmoLanding() {
           tRoadmap('item3_title'),
           tRoadmap('item4_title')
         ],
-        "screenshot": "https://rytmo.app/rytmo-screenshot.svg",
+        "screenshot": SCREENSHOT_URL,
         "softwareVersion": "1.0.3",
         "aggregateRating": {
           "@type": "AggregateRating",
@@ -55,19 +54,19 @@ export default function RytmoLanding() {
         },
         "author": {
           "@type": "Organization",
-          "name": "Rytmo"
+          "name": SITE_NAME
         }
       },
       {
         "@type": "WebPage",
-        "name": "Rytmo - " + tHero('title_focus') + " " + tHero('title_rhythm'),
+        "name": SITE_NAME + " - " + tHero('title_focus') + " " + tHero('title_rhythm'),
         "description": tHero('subtitle'),
-        "url": "https://rytmo.app",
+        "url": SITE_URL,
         "inLanguage": "en-US",
         "isPartOf": {
           "@type": "WebSite",
-          "name": "Rytmo",
-          "url": "https://rytmo.app"
+          "name": SITE_NAME,
+          "url": SITE_URL
         }
       }
     ]
@@ -175,7 +174,7 @@ export default function RytmoLanding() {
               className="group h-16 px-10 rounded-full bg-white text-black hover:bg-gray-200 font-medium text-lg transition-all duration-300 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_20px_40px_-10px_rgba(255,255,255,0.4)] hover:-translate-y-1"
               asChild
             >
-              <a href={downloadUrl} className="flex items-center gap-2">
+              <a href={DOWNLOAD_URL} className="flex items-center gap-2">
                 <FaApple className="w-6 h-6 mb-1" />
                 {tHero('download')}
                 <ArrowRight className="w-5 h-5 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
@@ -409,9 +408,9 @@ export default function RytmoLanding() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <RytmoIcon className="w-4 h-4 text-black" />
+                <PaceIcon className="w-4 h-4 text-black" />
               </div>
-              <span className="font-sans text-xl font-bold text-white">Rytmo</span>
+              <span className="font-sans text-xl font-bold text-white">{SITE_NAME}</span>
             </div>
 
             <nav className="flex gap-8">

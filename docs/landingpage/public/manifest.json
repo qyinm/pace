@@ -1,6 +1,6 @@
 {
-  "name": "Rytmo - Focus with Rhythm",
-  "short_name": "Rytmo",
+  "name": "Pace - Focus with Rhythm",
+  "short_name": "Pace",
   "description": "A minimalist Pomodoro timer with seamless YouTube playlist integration for macOS",
   "start_url": "/",
   "display": "standalone",
@@ -30,11 +30,11 @@
   ],
   "screenshots": [
     {
-      "src": "/rytmo-screenshot.svg",
+      "src": "/pace-screenshot.svg",
       "sizes": "1920x1080",
       "type": "image/svg+xml",
       "form_factor": "wide",
-      "label": "Rytmo running in macOS menubar"
+      "label": "Pace running in macOS menubar"
     }
   ],
   "shortcuts": [
@@ -55,7 +55,7 @@
   "related_applications": [
     {
       "platform": "macos",
-      "url": "https://rytmo.app"
+      "url": "https://pace.app"
     }
   ]
 }

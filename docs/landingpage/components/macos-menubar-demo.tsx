@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { RytmoIcon } from "@/components/rytmo-icon"
+import { PaceIcon } from "@/components/pace-icon"
+import { SCREENSHOT_PATH, SITE_NAME } from "@/lib/site"
 import { Music, SkipBack, SkipForward, Volume2, Play, Pause, RotateCcw, Settings, X, Activity, Timer, CheckSquare } from "lucide-react"
 import Image from "next/image"
 
@@ -26,8 +27,6 @@ function Waveform() {
 
 export function MacOSMenubarDemo() {
   const [isPlaying, setIsPlaying] = useState(true)
-  // Session color based on current session type (Work = Red, Short Break = Green, Long Break = Blue)
-  const sessionColor = "#EF4444" // Red for work session
 
   return (
     <div className="relative w-full">
@@ -42,31 +41,31 @@ export function MacOSMenubarDemo() {
         {/* Base macOS Screenshot */}
         <div className="relative w-full">
           <Image
-            src="/rytmo-screenshot.svg"
-            alt="Rytmo Pomodoro Timer running in macOS menubar with focus session, timer countdown, and YouTube playlist integration"
+            src={SCREENSHOT_PATH}
+            alt={`${SITE_NAME} Pomodoro Timer running in macOS menubar with focus session, timer countdown, and YouTube playlist integration`}
             width={1920}
             height={1080}
             className="w-full h-auto"
             priority
           />
 
-          {/* Overlay: Rytmo in Menubar (positioned near wifi/clock area) */}
+          {/* Overlay: Pace in Menubar (positioned near wifi/clock area) */}
           <div className="absolute top-[0.3%] right-[21%] flex items-center gap-1 md:gap-1.5 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md bg-white/40 cursor-pointer transition-all" style={{
             border: "2px solid #FF6B6B",
             boxShadow: "0 0 15px rgba(255, 107, 107, 0.5)",
             animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
           }}>
-            <RytmoIcon className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-gray-900" />
+            <PaceIcon className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-gray-900" />
             <span className="text-[9px] md:text-[11px] font-mono font-medium text-gray-900">24:15</span>
           </div>
 
-          {/* Overlay: Rytmo Popover - Below menubar icon */}
+          {/* Overlay: Pace Popover - Below menubar icon */}
           <div className="absolute top-[8%] md:top-[3.5%] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-[17.5%] bg-white/80 backdrop-blur-2xl rounded-[12px] md:rounded-[14px] shadow-xl md:shadow-2xl border border-white/40 overflow-hidden w-[85%] max-w-[340px] md:w-auto md:max-w-none scale-[0.5] md:scale-100 origin-top">
             <div className="flex flex-col w-full md:w-[360px] max-h-[45vh] md:max-h-[580px]">
               {/* Header */}
               <div className="px-3 md:px-4 py-2 md:py-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[14px] md:text-[18px] text-gray-900">Rytmo</span>
+                  <span className="font-semibold text-[14px] md:text-[18px] text-gray-900">{SITE_NAME}</span>
                   <div className="flex items-center gap-1 text-xs md:text-sm text-gray-500">
                     <span className="font-medium">6</span>
                     <span className="text-[10px] md:text-xs">sessions</span>

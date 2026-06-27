@@ -16,7 +16,7 @@ def ensure_feed(path):
     rss = ET.Element("rss", {"version": "2.0"})
     channel = ET.SubElement(rss, "channel")
     title = ET.SubElement(channel, "title")
-    title.text = "rytmo"
+    title.text = "Pace"
     return ET.ElementTree(rss)
 
 
@@ -25,7 +25,7 @@ def find_or_create_channel(root):
     if channel is None:
         channel = ET.SubElement(root, "channel")
         title = ET.SubElement(channel, "title")
-        title.text = "rytmo"
+        title.text = "Pace"
     return channel
 
 

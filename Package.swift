@@ -3,15 +3,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "Rytmo",
+    name: "Pace",
     defaultLocalization: "en",
     platforms: [
         .macOS("15.6")
     ],
     products: [
         .executable(
-            name: "rytmo",
-            targets: ["rytmo"]
+            name: "Pace",
+            targets: ["Pace"]
         )
     ],
     dependencies: [
@@ -38,7 +38,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "rytmo",
+            name: "Pace",
             dependencies: [
                 .product(name: "AmplitudeUnified", package: "AmplitudeUnified-Swift"),
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
@@ -47,10 +47,10 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
                 .product(name: "YouTubePlayerKit", package: "YouTubePlayerKit")
             ],
-            path: "rytmo",
+            path: "Pace",
             exclude: [
                 "Info.plist",
-                "rytmo.entitlements"
+                "Pace.entitlements"
             ],
             resources: [
                 .process("Assets.xcassets")
@@ -61,9 +61,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "rytmoTests",
-            dependencies: ["rytmo"],
-            path: "Tests/rytmoTests",
+            name: "PaceTests",
+            dependencies: ["Pace"],
+            path: "Tests/PaceTests",
             swiftSettings: [
                 .defaultIsolation(MainActor.self),
                 .enableUpcomingFeature("MemberImportVisibility")

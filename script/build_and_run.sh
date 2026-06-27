@@ -2,14 +2,14 @@
 set -euo pipefail
 
 MODE="${1:-run}"
-APP_NAME="rytmo"
-PROJECT_NAME="rytmo.xcodeproj"
-SCHEME_NAME="rytmo"
+APP_NAME="Pace"
+PROJECT_NAME="Pace.xcodeproj"
+SCHEME_NAME="Pace"
 CONFIGURATION="${CONFIGURATION:-Debug}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$ROOT_DIR/.build/xcode}"
-LOCAL_FIREBASE_PLIST="$ROOT_DIR/rytmo/GoogleService-Info.plist"
+LOCAL_FIREBASE_PLIST="$ROOT_DIR/Pace/GoogleService-Info.plist"
 LEGACY_FIREBASE_PLIST="$ROOT_DIR/rondo/GoogleService-Info.plist"
 
 usage() {
@@ -22,7 +22,7 @@ firebase_plist() {
   elif [[ -f "$LEGACY_FIREBASE_PLIST" ]]; then
     printf '%s\n' "$LEGACY_FIREBASE_PLIST"
   else
-    echo "Missing GoogleService-Info.plist. Add it to rytmo/GoogleService-Info.plist." >&2
+    echo "Missing GoogleService-Info.plist. Add it to Pace/GoogleService-Info.plist." >&2
     exit 1
   fi
 }
@@ -43,8 +43,8 @@ plist_value() {
 }
 
 development_signing_identity() {
-  if [[ -n "${RYTMO_CODE_SIGN_IDENTITY:-}" ]]; then
-    printf '%s\n' "$RYTMO_CODE_SIGN_IDENTITY"
+  if [[ -n "${PACE_CODE_SIGN_IDENTITY:-}" ]]; then
+    printf '%s\n' "$PACE_CODE_SIGN_IDENTITY"
     return
   fi
 
@@ -88,14 +88,14 @@ build_app() {
   source_plist="$(firebase_plist)"
   copy_firebase_plist_if_needed "$source_plist"
 
-  bundle_id="${RYTMO_BUNDLE_ID:-$(plist_value "$LOCAL_FIREBASE_PLIST" BUNDLE_ID)}"
+  bundle_id="${PACE_BUNDLE_ID:-$(plist_value "$LOCAL_FIREBASE_PLIST" BUNDLE_ID)}"
   if [[ -z "$bundle_id" ]]; then
-    bundle_id="dievas.rytmo"
+    bundle_id="dievas.pace"
   fi
 
   signing_identity="$(development_signing_identity)"
   if [[ -z "$signing_identity" ]]; then
-    echo "No Apple Development signing identity found. Set RYTMO_CODE_SIGN_IDENTITY to run the app with Keychain entitlements." >&2
+    echo "No Apple Development signing identity found. Set PACE_CODE_SIGN_IDENTITY to run the app with Keychain entitlements." >&2
     exit 1
   fi
 

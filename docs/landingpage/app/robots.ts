@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/site'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -19,7 +20,7 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 0,
       },
     ],
-    sitemap: 'https://rytmo.app/sitemap.xml',
-    host: 'https://rytmo.app',
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   }
 }

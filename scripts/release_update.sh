@@ -4,18 +4,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-PROJECT_PATH="${APP_REPO_DIR}/rytmo.xcodeproj"
-SCHEME="rytmo"
+PROJECT_PATH="${APP_REPO_DIR}/Pace.xcodeproj"
+SCHEME="Pace"
 CONFIGURATION="Release"
 UPDATE_DIR="${APP_REPO_DIR}/sparkle"
-BASE_DOWNLOAD_URL="https://qyinm.github.io/rytmo/sparkle"
-DMG_NAME="Rytmo.dmg"
+BASE_DOWNLOAD_URL="https://qyinm.github.io/pace/sparkle"
+DMG_NAME="Pace.dmg"
 SKIP_DMG=0
 SIGN_UPDATE_BIN="${SPARKLE_SIGN_UPDATE_BIN:-}"
 LOCAL_SIGN_UPDATE_BIN="${APP_REPO_DIR}/sparkle/tools/sign_update"
 LEGACY_FEED_SYNC=0
-LEGACY_UPDATE_DIR="${APP_REPO_DIR}/../Rytmo-update"
-LEGACY_BASE_DOWNLOAD_URL="https://qyinm.github.io/rytmo-update"
+LEGACY_UPDATE_DIR="${APP_REPO_DIR}/../Pace-update"
+LEGACY_BASE_DOWNLOAD_URL="https://qyinm.github.io/pace-update"
 GITHUB_RELEASE=0
 GITHUB_DRY_RUN=0
 GITHUB_DRAFT=0
@@ -30,7 +30,7 @@ print_help() {
   cat <<'EOF'
 Usage: scripts/release_update.sh [options]
 
-Automates release packaging for Rytmo:
+Automates release packaging for Pace:
 1) xcodebuild archive (Release)
 2) export .app from archive
 3) zip update payload into sparkle/
@@ -43,12 +43,12 @@ Options:
   --sign-update-bin <path> Path to Sparkle sign_update binary
   --legacy-feed-sync       Also sync Sparkle artifacts to legacy feed path
   --legacy-update-dir <path>
-                           Legacy mirror directory (default: ../Rytmo-update)
-  --legacy-base-url <url>  Legacy base URL (default: https://qyinm.github.io/rytmo-update)
-  --scheme <name>          Xcode scheme (default: rytmo)
-  --project <path>         Xcode project path (default: rytmo.xcodeproj)
+                           Legacy mirror directory (default: ../Pace-update)
+  --legacy-base-url <url>  Legacy base URL (default: https://qyinm.github.io/pace-update)
+  --scheme <name>          Xcode scheme (default: Pace)
+  --project <path>         Xcode project path (default: Pace.xcodeproj)
   --configuration <name>   Build configuration (default: Release)
-  --dmg-name <name>        Output DMG name (default: Rytmo.dmg)
+  --dmg-name <name>        Output DMG name (default: Pace.dmg)
   --skip-dmg               Skip DMG creation
   --github-release         Create or update GitHub release via gh CLI
   --github-dry-run         Print GitHub release commands without executing them
@@ -228,7 +228,7 @@ if [[ ! "$APPCAST_RETAIN_COUNT" =~ ^[0-9]+$ ]] || [[ "$APPCAST_RETAIN_COUNT" -lt
   exit 1
 fi
 
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/rytmo-release-XXXXXX")"
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pace-release-XXXXXX")"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 ARCHIVE_PATH="${TMP_DIR}/${SCHEME}.xcarchive"
@@ -294,10 +294,10 @@ if [[ ! -f "$SPARKLE_RELEASE_NOTES_FILE" ]]; then
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rytmo ${SHORT_VERSION}</title>
+  <title>Pace ${SHORT_VERSION}</title>
 </head>
 <body>
-  <h1>Rytmo ${SHORT_VERSION}</h1>
+  <h1>Pace ${SHORT_VERSION}</h1>
   <p>${TODAY}</p>
   <ul>
     <li>Update details go here.</li>
@@ -373,7 +373,7 @@ if [[ "$SKIP_DMG" -eq 0 ]]; then
       cd "$UPDATE_DIR"
       if [[ -f "./dmg-background.png" ]]; then
         create-dmg \
-          --volname "Rytmo Installer" \
+          --volname "Pace Installer" \
           --window-pos 200 120 \
           --window-size 600 400 \
           --background "./dmg-background.png" \
@@ -387,7 +387,7 @@ if [[ "$SKIP_DMG" -eq 0 ]]; then
       else
         echo "dmg-background.png not found. Creating DMG without custom background."
         create-dmg \
-          --volname "Rytmo Installer" \
+          --volname "Pace Installer" \
           --window-pos 200 120 \
           --window-size 600 400 \
           --icon-size 100 \
@@ -401,7 +401,7 @@ if [[ "$SKIP_DMG" -eq 0 ]]; then
     )
   else
     hdiutil create \
-      -volname "Rytmo Installer" \
+      -volname "Pace Installer" \
       -srcfolder "$INSTALLER_SOURCE_DIR" \
       -ov \
       -format UDZO \
@@ -425,7 +425,7 @@ if [[ "$GITHUB_RELEASE" -eq 1 ]]; then
   echo "[6/6] Publishing GitHub release..."
 
   RELEASE_TAG="${GITHUB_TAG_PREFIX}${SHORT_VERSION}"
-  RELEASE_TITLE="Rytmo ${SHORT_VERSION} (${BUILD_VERSION})"
+  RELEASE_TITLE="Pace ${SHORT_VERSION} (${BUILD_VERSION})"
 
   if [[ -z "$GITHUB_TARGET" ]]; then
     GITHUB_TARGET="$(git rev-parse HEAD)"
@@ -440,7 +440,7 @@ if [[ "$GITHUB_RELEASE" -eq 1 ]]; then
   if [[ -z "$GITHUB_RELEASE_NOTES_FILE" ]]; then
     GITHUB_RELEASE_NOTES_FILE="${TMP_DIR}/github_release_notes.md"
     {
-      echo "# Rytmo ${SHORT_VERSION}"
+      echo "# Pace ${SHORT_VERSION}"
       echo
       echo "- Build: ${BUILD_VERSION}"
       if [[ -n "$MIN_SYSTEM_VERSION" ]]; then

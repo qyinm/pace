@@ -77,7 +77,7 @@ export default function Changelog() {
             </Badge>
             <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-tight mb-6">Changelog</h1>
             <p className="font-sans text-xl text-black/60 max-w-xl mx-auto">
-              Follow our journey as we improve Rytmo with new features and enhancements.
+              Follow our journey as we improve Pace with new features and enhancements.
             </p>
           </div>
 
