@@ -1,8 +1,8 @@
-# Rytmo landing page
+# Pace landing page
 
 *Automatically synced with your [v0.app](https://v0.app) deployments*
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/qusseun/v0-rytmo-landing-page)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
 [![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/227oqg91AGO)
 
 ## Overview
@@ -12,9 +12,9 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 ## Deployment
 
-Your project is live at:
+The landing page is deployed through Vercel for the Pace site.
 
-**[https://vercel.com/qusseun/v0-rytmo-landing-page](https://vercel.com/qusseun/v0-rytmo-landing-page)**
+Update the deployment target there if the canonical Pace domain changes.
 
 ## Build your app
 

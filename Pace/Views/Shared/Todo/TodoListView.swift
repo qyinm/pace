@@ -1,0 +1,188 @@
+//
+//  TodoListView.swift
+//  Pace
+//
+//  Created by gemini-code-assist on 12/24/25.
+//
+
+import SwiftUI
+import SwiftData
+
+private enum DateFormatters {
+    static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter
+    }()
+}
+
+struct TodoListView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \TodoItem.orderIndex) private var todos: [TodoItem]
+    
+    var showHeader: Bool = true
+    var compact: Bool = false
+
+    private var visibleTodos: [TodoItem] {
+        todos.filter { !$0.isCompleted }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if showHeader {
+                HStack(spacing: 8) {
+                    Text("Tasks")
+                        .font(.system(size: compact ? 14 : 18, weight: .bold))
+                        .foregroundColor(.primary)
+                    
+                    Text("\(visibleTodos.count)")
+                        .font(.system(size: compact ? 10 : 12, weight: .bold))
+                        .padding(.horizontal, compact ? 6 : 8)
+                        .padding(.vertical, 2)
+                        .background(Color.primary.opacity(0.1))
+                        .foregroundColor(.primary)
+                        .clipShape(Capsule())
+                    
+                    Spacer()
+                }
+            }
+            
+            // Todo List
+            if visibleTodos.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "checklist")
+                        .font(.system(size: compact ? 24 : 32))
+                        .foregroundColor(.secondary.opacity(0.3))
+                    Text("No open tasks")
+                        .font(.system(size: compact ? 12 : 14))
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, compact ? 20 : 40)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(visibleTodos) { todo in
+                        TodoRowView(todo: todo, compact: compact)
+                        
+                        if todo.id != visibleTodos.last?.id {
+                            Divider()
+                                .opacity(0.5)
+                        }
+                    }
+                }
+                .background(Color.primary.opacity(0.02))
+                .cornerRadius(10)
+            }
+        }
+    }
+}
+
+struct TodoRowView: View {
+    @Environment(\.modelContext) private var modelContext
+    let todo: TodoItem
+    var compact: Bool = false
+
+    @State private var showDeleteConfirm = false
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                toggleCompletion()
+            }) {
+                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: compact ? 16 : 18))
+                    .foregroundColor(todo.isCompleted ? .primary : .secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(todo.isCompleted ? "Mark incomplete" : "Mark complete")
+            .help(todo.isCompleted ? "Mark incomplete" : "Mark complete")
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(todo.title)
+                    .font(.system(size: compact ? 13 : 15))
+                    .strikethrough(todo.isCompleted)
+                    .foregroundColor(todo.isCompleted ? .secondary : .primary)
+                    .lineLimit(3)
+
+                if let notes = todo.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.system(size: compact ? 11 : 13))
+                        .foregroundColor(todo.isCompleted ? .secondary.opacity(0.6) : .secondary.opacity(0.8))
+                        .lineLimit(2)
+                }
+
+                if let dueDate = visibleDueDate {
+                    HStack(spacing: 4) {
+                        Image(systemName: isOverdue(dueDate) ? "calendar.badge.exclamationmark" : "calendar")
+                            .font(.system(size: compact ? 10 : 12))
+                        Text(formatDate(dueDate))
+                            .font(.system(size: compact ? 10 : 12))
+                    }
+                    .foregroundColor(isOverdue(dueDate) ? .red : .secondary)
+                }
+            }
+            
+            Spacer()
+
+            Menu {
+                Button("Delete Task", role: .destructive) {
+                    showDeleteConfirm = true
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: compact ? 12 : 14))
+                    .foregroundColor(.secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .accessibilityLabel("Task actions")
+            .help("Task actions")
+        }
+        .padding(.vertical, compact ? 8 : 12)
+        .padding(.horizontal, compact ? 8 : 12)
+        .contentShape(Rectangle())
+        .alert("Delete Task?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                modelContext.delete(todo)
+            }
+        } message: {
+            Text("This removes \"\(todo.title)\" from your local task list.")
+        }
+    }
+
+    // MARK: - Actions
+    
+    private func toggleCompletion() {
+        todo.toggleCompletion()
+    }
+
+    // MARK: - Helper Methods
+
+    private var visibleDueDate: Date? {
+        guard let dueDate = todo.dueDate else { return nil }
+
+        if compact, todo.isCompleted, dueDate == todo.completedAt {
+            return nil
+        }
+
+        return dueDate
+    }
+
+    private func isOverdue(_ date: Date) -> Bool {
+        date < Date() && !todo.isCompleted
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Today"
+        } else if calendar.isDateInTomorrow(date) {
+            return "Tomorrow"
+        } else {
+            return DateFormatters.dateFormatter.string(from: date)
+        }
+    }
+}

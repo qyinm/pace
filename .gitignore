@@ -121,3 +121,6 @@ docs/.env*.local
 __pycache__/
 *.pyc
 *.pyo
+
+# Local git worktrees
+.worktrees/

@@ -4,7 +4,7 @@ import { ImageResponse } from 'next/og'
 export const runtime = 'edge'
 
 // Image metadata
-export const alt = 'Rytmo - Focus with Rhythm'
+export const alt = 'Pace - Focus with Rhythm'
 export const size = {
   width: 1200,
   height: 630,
@@ -70,7 +70,7 @@ export default async function Image() {
             textAlign: 'center',
           }}
         >
-          Rytmo
+          Pace
         </div>
 
         {/* Subtitle */}

@@ -1,4 +1,4 @@
-# Rytmo
+# Pace
 
 macOS Menu Bar Timer for Rhythmic Immersion
 
@@ -28,8 +28,8 @@ A Pomodoro timer that lives right in your menu bar. Start immediately without co
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/rytmo.git
-cd rytmo/rytmo
+git clone https://github.com/qyinm/pace.git
+cd pace
 ```
 
 ### Configuration
@@ -51,7 +51,7 @@ REVERSED_CLIENT_ID = your_google_reversed_client_id
 
 **3. Firebase Setup**
 
-Download `GoogleService-Info.plist` from Firebase Console and add it to the `rytmo/rytmo/` folder.
+Download `GoogleService-Info.plist` from Firebase Console and add it to the `Pace/` folder.
 
 **4. Add GoogleSignIn Package**
 
@@ -62,7 +62,7 @@ In Xcode:
 **5. Run**
 
 ```bash
-open rytmo.xcodeproj
+open Pace.xcodeproj
 # Run with Command+R
 ```
 
@@ -80,15 +80,18 @@ open rytmo.xcodeproj
 ### Project Structure
 
 ```
-rytmo/
-├── rytmo/
+repository-root/
+├── Pace/
 │   ├── Models/
 │   ├── Views/
 │   ├── Managers/
-│   └── rytmoApp.swift
-├── rytmo-backend/          # v1.1+
-├── rytmo-landing-page/
+│   └── PaceApp.swift
+├── Tests/
+│   └── PaceTests/
+├── sparkle/
+├── scripts/
 └── docs/
+    └── landingpage/
 ```
 
 ## Design
@@ -105,13 +108,13 @@ Follows a Notion-style minimal design.
 
 ```bash
 # Debug
-xcodebuild -scheme rytmo -configuration Debug build
+xcodebuild -scheme Pace -configuration Debug build
 
 # Release
-xcodebuild -scheme rytmo -configuration Release build
+xcodebuild -scheme Pace -configuration Release build
 
 # Test
-xcodebuild test -scheme rytmo
+xcodebuild test -scheme Pace
 ```
 
 ### SwiftPM
@@ -119,10 +122,10 @@ xcodebuild test -scheme rytmo
 ```bash
 swift package resolve
 swift build
-swift run rytmo
+swift run Pace
 ```
 
-SwiftPM builds the `rytmo` executable target directly from `Package.swift`.
+SwiftPM builds the `Pace` executable target directly from `Package.swift`.
 The package uses Swift tools 6.2 and Swift 6 language mode.
 Use the Xcode/release scripts when you need a signed `.app` bundle,
 entitlements, or Sparkle DMG release artifacts.
@@ -138,7 +141,7 @@ Run one command to archive/export `.app`, create update zip, update `appcast.xml
 Optional flags:
 
 ```bash
-./scripts/release_update.sh --base-url https://qyinm.github.io/rytmo/sparkle --skip-dmg
+./scripts/release_update.sh --base-url https://qyinm.github.io/pace/sparkle --skip-dmg
 ```
 
 Default bundled binary path:
@@ -186,8 +189,8 @@ Legacy sync with explicit path/URL:
 ```bash
 ./scripts/release_update.sh \
   --legacy-feed-sync \
-  --legacy-update-dir ../Rytmo-update \
-  --legacy-base-url https://qyinm.github.io/rytmo-update
+  --legacy-update-dir ../Pace-update \
+  --legacy-base-url https://qyinm.github.io/pace-update
 ```
 
 Requirements:
@@ -196,15 +199,15 @@ Requirements:
 - Optional overrides: `--sign-update-bin`, `SPARKLE_SIGN_UPDATE_BIN`, or PATH `sign_update`
 - `create-dmg` (optional, script falls back to `hdiutil` if missing)
 - `gh` (only when using `--github-release`)
-- Optional legacy sync target directory (default: `../Rytmo-update`) when `--legacy-feed-sync` is enabled
+- Optional legacy sync target directory (default: `../Pace-update`) when `--legacy-feed-sync` is enabled
 
 Output:
 - `sparkle/<AppName>-<shortVersion>-<build>.zip`
 - `sparkle/appcast.xml` (keeps newest item only by default)
 - `sparkle/release_notes/release_notes_<shortVersion>.html` (auto-created placeholder if missing)
-- `sparkle/Rytmo.dmg` (unless `--skip-dmg`)
+- `sparkle/Pace.dmg` (unless `--skip-dmg`)
 - GitHub Release `v<shortVersion>` with ZIP/DMG assets (when `--github-release`)
-- Legacy mirror artifacts/appcast in `../Rytmo-update` (when `--legacy-feed-sync`)
+- Legacy mirror artifacts/appcast in `../Pace-update` (when `--legacy-feed-sync`)
 
 Appcast retention:
 - Default policy keeps only the latest appcast item (`--retain-appcast-items 1`).
@@ -243,7 +246,7 @@ Check Background Mode settings and use Date-based time calculation.
 
 Check the following:
 - GoogleService-Info.plist location
-- Keychain Access Group (rytmo.entitlements)
+- Keychain Access Group (Pace.entitlements)
 - URL Schemes configuration (Info.plist)
 
 ### Build Errors
@@ -253,9 +256,9 @@ Check the following:
 shift + command + K
 
 # Delete DerivedData
-rm -rf ~/Library/Developer/Xcode/DerivedData/rytmo-*
+rm -rf ~/Library/Developer/Xcode/DerivedData/Pace-*
 ```
 
 ## License
 
-MIT License - Copyright (c) 2025 Rytmo
+MIT License - Copyright (c) 2025 Pace

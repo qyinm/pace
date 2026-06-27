@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useTransition } from 'react'
-import { RytmoIcon } from '@/components/rytmo-icon'
+import { useState, useEffect, useRef, useTransition } from 'react'
+import { PaceIcon } from '@/components/pace-icon'
 import { Button } from '@/components/ui/button'
 import {useTranslations, useLocale} from 'next-intl';
 import {Link, usePathname, useRouter} from '@/i18n/routing';
+import { DOWNLOAD_URL, SITE_NAME } from '@/lib/site';
 import { Globe } from "lucide-react" 
 import { FaApple } from "react-icons/fa"; 
 
@@ -13,7 +14,7 @@ export function Header() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -95,7 +96,7 @@ export function Header() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-1.5 md:gap-2 group">
             <div className="w-7 h-7 md:w-8 md:h-8 bg-[#000000] rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-              <RytmoIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFFFFF]" />
+              <PaceIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFFFFF]" />
             </div>
             <span
               className={`font-serif font-bold text-[#000000] transition-all ${
@@ -103,7 +104,7 @@ export function Header() {
               }`}
               style={{ letterSpacing: '-0.02em' }}
             >
-              Rytmo
+              {SITE_NAME}
             </span>
           </a>
 
@@ -153,7 +154,7 @@ export function Header() {
               }}
               asChild
             >
-              <a href="https://qyinm.github.io/rytmo/sparkle/Rytmo.dmg" className="flex items-center gap-2">
+              <a href={DOWNLOAD_URL} className="flex items-center gap-2">
                 <FaApple className="w-4 h-4 mb-0.5" />
                 {t('download_macos')}
               </a>
@@ -245,7 +246,7 @@ export function Header() {
             asChild
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <a href="https://qyinm.github.io/rytmo/sparkle/Rytmo.dmg" className="flex items-center justify-center gap-2">
+            <a href={DOWNLOAD_URL} className="flex items-center justify-center gap-2">
               <FaApple className="w-5 h-5 mb-0.5" />
               {t('download_macos')}
             </a>
