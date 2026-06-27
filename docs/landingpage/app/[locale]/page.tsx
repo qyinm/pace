@@ -381,7 +381,7 @@ export default function PaceLanding() {
                 className="group h-16 md:h-20 px-12 rounded-full bg-white text-black hover:bg-gray-100 font-medium text-lg md:text-xl transition-all duration-300 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_20px_40px_-10px_rgba(255,255,255,0.4)] hover:-translate-y-1"
                 asChild
              >
-                <a href={downloadUrl} className="flex items-center gap-3">
+                <a href={DOWNLOAD_URL} className="flex items-center gap-3">
                   <FaApple className="w-5 h-5 md:w-6 md:h-6 mb-1" />
                   {tCTA('download')}
                   <ArrowRight className="w-5 h-5 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
